@@ -5,6 +5,8 @@ from .views import (
     ClientDetailAPIView,
 )
 
+app_name = "clients"
+
 urlpatterns = [
     path("", ClientListAPIView.as_view(), name="client-list"),
     path("create/", ClientCreateAPIView.as_view(), name="client-create"),
