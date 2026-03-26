@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.models import User
-from common.choices import UserRole
+from users.choices import UserRole
 from .models import Project
 from .permissions import CanManageProject, CanViewProject
 from .serializers import ProjectSerializer, AssignProjectMembersSerializer
