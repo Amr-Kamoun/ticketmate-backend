@@ -6,9 +6,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.models import User, UserRole
+
 from .models import Project
 from .permissions import CanManageProject, CanViewProject
-from .serializers import ProjectSerializer, AssignProjectMembersSerializer
+from .serializers import AssignProjectMembersSerializer, ProjectSerializer
 
 
 class ProjectListCreateAPIView(APIView):
@@ -23,7 +24,9 @@ class ProjectListCreateAPIView(APIView):
         if user.role == UserRole.ADMIN:
             projects = Project.objects.all().order_by("-created_at")
         elif user.role == UserRole.PROJECT_OWNER:
-            projects = Project.objects.filter(project_owner=user).order_by("-created_at")
+            projects = Project.objects.filter(project_owner=user).order_by(
+                "-created_at"
+            )
         elif user.role == UserRole.EMPLOYEE:
             projects = Project.objects.filter(team_members=user).order_by("-created_at")
         else:
@@ -47,9 +50,14 @@ class ProjectListCreateAPIView(APIView):
         if serializer.is_valid():
             project_owner = serializer.validated_data["project_owner"]
 
-            if request.user.role == UserRole.PROJECT_OWNER and project_owner != request.user:
+            if (
+                request.user.role == UserRole.PROJECT_OWNER
+                and project_owner != request.user
+            ):
                 return Response(
-                    {"detail": "Project owners can only create projects assigned to themselves."},
+                    {
+                        "detail": "Project owners can only create projects assigned to themselves."
+                    },
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
@@ -95,9 +103,14 @@ class ProjectDetailAPIView(APIView):
         if serializer.is_valid():
             project_owner = serializer.validated_data["project_owner"]
 
-            if request.user.role == UserRole.PROJECT_OWNER and project_owner != request.user:
+            if (
+                request.user.role == UserRole.PROJECT_OWNER
+                and project_owner != request.user
+            ):
                 return Response(
-                    {"detail": "Project owners can only assign projects to themselves."},
+                    {
+                        "detail": "Project owners can only assign projects to themselves."
+                    },
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
@@ -124,7 +137,9 @@ class ProjectDetailAPIView(APIView):
                 project_owner = serializer.validated_data.get("project_owner")
                 if project_owner and project_owner != request.user:
                     return Response(
-                        {"detail": "Project owners can only assign projects to themselves."},
+                        {
+                            "detail": "Project owners can only assign projects to themselves."
+                        },
                         status=status.HTTP_403_FORBIDDEN,
                     )
 
@@ -190,7 +205,9 @@ class MyProjectsAPIView(APIView):
         if user.role == UserRole.ADMIN:
             projects = Project.objects.all().order_by("-created_at")
         elif user.role == UserRole.PROJECT_OWNER:
-            projects = Project.objects.filter(project_owner=user).order_by("-created_at")
+            projects = Project.objects.filter(project_owner=user).order_by(
+                "-created_at"
+            )
         elif user.role == UserRole.EMPLOYEE:
             projects = Project.objects.filter(team_members=user).order_by("-created_at")
         else:

@@ -23,4 +23,7 @@ class IsClient(BasePermission):
 
 class IsAdminOrProjectOwner(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in ["ADMIN", "PROJECT_OWNER"]
+        return request.user.is_authenticated and request.user.role in [
+            "ADMIN",
+            "PROJECT_OWNER",
+        ]

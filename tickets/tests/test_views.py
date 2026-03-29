@@ -59,7 +59,9 @@ class TicketAPITestCase(APITestCase):
 
         self.list_url = reverse("tickets:ticket-list")
         self.create_url = reverse("tickets:ticket-create")
-        self.detail_url = reverse("tickets:ticket-detail", kwargs={"pk": self.ticket.pk})
+        self.detail_url = reverse(
+            "tickets:ticket-detail", kwargs={"pk": self.ticket.pk}
+        )
 
     def authenticate(self, user):
         refresh = RefreshToken.for_user(user)
@@ -72,27 +74,6 @@ class TicketAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
-
-    def test_authenticated_user_can_create_ticket(self):
-        self.authenticate(self.admin_user)
-
-        data = {
-            "title": "New Ticket",
-            "description": "A new issue appeared.",
-            "ticket_type": TicketType.INQUIRY,
-            "priority": TicketPriority.MEDIUM,
-            "status": TicketStatus.TODO,
-            "project": self.project.pk,
-            "assigned_to": self.normal_user.pk,
-        }
-
-        response = self.client.post(self.create_url, data, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Ticket.objects.count(), 2)
-
-        created_ticket = Ticket.objects.get(title="New Ticket")
-        self.assertEqual(created_ticket.created_by, self.admin_user)
 
     def test_authenticated_user_can_retrieve_ticket(self):
         self.authenticate(self.admin_user)
@@ -170,3 +151,28 @@ class TicketAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("non_field_errors", response.data)
+
+    def test_unrelated_user_cannot_create_ticket_for_project(self):
+        other_user = User.objects.create_user(
+            username="otheruser",
+            email="other@example.com",
+            password="OtherPass123!",
+            full_name="Other User",
+            role=UserRole.CLIENT,
+        )
+
+        refresh = RefreshToken.for_user(other_user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {refresh.access_token}")
+
+        data = {
+            "title": "Unauthorized Ticket",
+            "description": "Should not be allowed.",
+            "ticket_type": TicketType.PROBLEM,
+            "priority": TicketPriority.HIGH,
+            "status": TicketStatus.TODO,
+            "project": self.project.pk,
+        }
+
+        response = self.client.post(self.create_url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

@@ -1,22 +1,31 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from tickets.helpers import can_create_ticket
 from tickets.models import Ticket, TicketStatus
+from tickets.permissions import CanAccessTicket
 from tickets.serializers import TicketSerializer
+from users.models import UserRole
 
-'''
-all permission are subject to change the are just set like that for now
-'''
+User = get_user_model()
+
+
 class TicketListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        tickets = Ticket.objects.select_related(
-            "project", "created_by", "assigned_to", "linked_ticket"
-        ).all().order_by("-created_at")
+        tickets = (
+            Ticket.objects.select_related(
+                "project", "created_by", "assigned_to", "linked_ticket"
+            )
+            .all()
+            .order_by("-created_at")
+        )
 
         status_filter = request.query_params.get("status")
         priority_filter = request.query_params.get("priority")
@@ -48,22 +57,38 @@ class TicketCreateAPIView(APIView):
 
     def post(self, request):
         serializer = TicketSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(created_by=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        project = serializer.validated_data.get("project")
+
+        if not can_create_ticket(request.user, project):
+            return Response(
+                {"detail": "You are not allowed to create tickets for this project."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer.save(created_by=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class TicketDetailAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, CanAccessTicket]
+
+    def get_object(self, pk):
+        return get_object_or_404(Ticket, pk=pk)
 
     def get(self, request, pk):
-        ticket = get_object_or_404(Ticket, pk=pk)
+        ticket = self.get_object(pk)
+        self.check_object_permissions(request, ticket)
+
         serializer = TicketSerializer(ticket)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
-        ticket = get_object_or_404(Ticket, pk=pk)
+        ticket = self.get_object(pk)
+        self.check_object_permissions(request, ticket)
+
         serializer = TicketSerializer(ticket, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -71,7 +96,9 @@ class TicketDetailAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk):
-        ticket = get_object_or_404(Ticket, pk=pk)
+        ticket = self.get_object(pk)
+        self.check_object_permissions(request, ticket)
+
         serializer = TicketSerializer(ticket, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -79,7 +106,9 @@ class TicketDetailAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        ticket = get_object_or_404(Ticket, pk=pk)
+        ticket = self.get_object(pk)
+        self.check_object_permissions(request, ticket)
+
         if ticket.status == TicketStatus.CLOSED:
             return Response(
                 {"detail": "Closed tickets cannot be deleted."},
@@ -88,34 +117,73 @@ class TicketDetailAPIView(APIView):
 
         ticket.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
+
+
 class TicketAssignAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, CanAccessTicket]
+
+    def get_object(self, pk):
+        return get_object_or_404(Ticket, pk=pk)
 
     def patch(self, request, pk):
-        ticket = get_object_or_404(Ticket, pk=pk)
+        ticket = self.get_object(pk)
 
-        if ticket.status == TicketStatus.CLOSED:
-            return Response(
-                {"detail": "Closed tickets cannot be edited."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        assigned_to = request.data.get("assigned_to")
-        if not assigned_to:
+        assigned_to_id = request.data.get("assigned_to")
+        if not assigned_to_id:
             return Response(
                 {"assigned_to": ["This field is required."]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        ticket.assigned_to_id = assigned_to
+        if ticket.status == TicketStatus.CLOSED:
+            return Response(
+                {"detail": "Closed tickets cannot be modified."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            assigned_user = User.objects.get(id=assigned_to_id)
+        except User.DoesNotExist:
+            return Response(
+                {"assigned_to": ["User does not exist."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if assigned_user.role != UserRole.EMPLOYEE:
+            return Response(
+                {"assigned_to": ["User must be an employee."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if hasattr(ticket.project, "team_members"):
+            if not ticket.project.team_members.filter(id=assigned_user.id).exists():
+                return Response(
+                    {"assigned_to": ["User is not part of this project team."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        self.check_object_permissions(request, ticket)
+
+        ticket.assigned_to = assigned_user
+
+        if ticket.status == TicketStatus.TODO:
+            ticket.status = TicketStatus.IN_PROGRESS
+
         ticket.save()
 
-        serializer = TicketSerializer(ticket)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
+        return Response(
+            {
+                "detail": "Ticket assigned successfully.",
+                "ticket_id": ticket.id,
+                "assigned_to": ticket.assigned_to.id,
+                "status": ticket.status,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class TicketStatusUpdateAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, CanAccessTicket]
 
     ALLOWED_TRANSITIONS = {
         TicketStatus.TODO: [TicketStatus.IN_PROGRESS],
@@ -124,8 +192,11 @@ class TicketStatusUpdateAPIView(APIView):
         TicketStatus.CLOSED: [],
     }
 
+    def get_object(self, pk):
+        return get_object_or_404(Ticket, pk=pk)
+
     def patch(self, request, pk):
-        ticket = get_object_or_404(Ticket, pk=pk)
+        ticket = self.get_object(pk)
 
         new_status = request.data.get("status")
         if not new_status:
@@ -134,33 +205,44 @@ class TicketStatusUpdateAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        allowed_statuses = self.ALLOWED_TRANSITIONS.get(ticket.status, [])
-
-        if new_status not in allowed_statuses:
-            return Response(
-                {
-                    "detail": f"Invalid status transition from {ticket.status} to {new_status}."
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        ticket.status = new_status
-        ticket.save()
-
-        serializer = TicketSerializer(ticket)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-class TicketLinkAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def patch(self, request, pk):
-        ticket = get_object_or_404(Ticket, pk=pk)
-
         if ticket.status == TicketStatus.CLOSED:
             return Response(
-                {"detail": "Closed tickets cannot be edited."},
+                {"detail": "Closed tickets cannot be modified."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        allowed_statuses = self.ALLOWED_TRANSITIONS.get(ticket.status, [])
+        if new_status not in allowed_statuses:
+            return Response(
+                {"detail": "Invalid status transition."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        self.check_object_permissions(request, ticket)
+
+        ticket.status = new_status
+
+        if new_status == TicketStatus.RESOLVED:
+            ticket.resolved_at = timezone.now()
+        elif new_status == TicketStatus.CLOSED:
+            ticket.closed_at = timezone.now()
+
+        ticket.save()
+
+        return Response(
+            {"status": ticket.status},
+            status=status.HTTP_200_OK,
+        )
+
+
+class TicketLinkAPIView(APIView):
+    permission_classes = [IsAuthenticated, CanAccessTicket]
+
+    def get_object(self, pk):
+        return get_object_or_404(Ticket, pk=pk)
+
+    def patch(self, request, pk):
+        ticket = self.get_object(pk)
 
         linked_ticket_id = request.data.get("linked_ticket")
         if not linked_ticket_id:
@@ -169,16 +251,26 @@ class TicketLinkAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        linked_ticket = get_object_or_404(Ticket, pk=linked_ticket_id)
-
-        if ticket.id == linked_ticket.id:
+        if ticket.status == TicketStatus.CLOSED:
             return Response(
-                {"detail": "A ticket cannot be linked to itself."},
+                {"detail": "Closed tickets cannot be modified."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        if ticket.id == int(linked_ticket_id):
+            return Response(
+                {"detail": "Cannot link ticket to itself."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        linked_ticket = get_object_or_404(Ticket, pk=linked_ticket_id)
+
+        self.check_object_permissions(request, ticket)
 
         ticket.linked_ticket = linked_ticket
         ticket.save()
 
-        serializer = TicketSerializer(ticket)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Linked"},
+            status=status.HTTP_200_OK,
+        )

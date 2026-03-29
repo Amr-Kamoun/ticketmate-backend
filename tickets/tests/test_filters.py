@@ -140,7 +140,9 @@ class TicketFilterAPITestCase(APITestCase):
     def test_filter_tickets_by_assigned_user(self):
         self.authenticate(self.admin_user)
 
-        response = self.client.get(self.list_url, {"assigned_to": self.employee_user.pk})
+        response = self.client.get(
+            self.list_url, {"assigned_to": self.employee_user.pk}
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)

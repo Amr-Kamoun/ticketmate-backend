@@ -37,7 +37,9 @@ class ClientAPITestCase(APITestCase):
 
         self.list_url = reverse("clients:client-list")
         self.create_url = reverse("clients:client-create")
-        self.detail_url = reverse("clients:client-detail", kwargs={"pk": self.client_obj.pk})
+        self.detail_url = reverse(
+            "clients:client-detail", kwargs={"pk": self.client_obj.pk}
+        )
 
     def authenticate(self, user):
         refresh = RefreshToken.for_user(user)
