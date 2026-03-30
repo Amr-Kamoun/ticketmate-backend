@@ -10,25 +10,66 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('clients', '0001_initial'),
+        ("clients", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Project',
+            name="Project",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('project_type', models.CharField(choices=[('ORACLE_SUPPORT', 'Oracle Support'), ('SOFTWARE_SUPPORT', 'Software Support'), ('OPEN_SOURCE_SUPPORT', 'Open-Source Support')], max_length=30)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('client', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='projects', to='clients.client')),
-                ('project_owner', models.ForeignKey(limit_choices_to={'role': 'PROJECT_OWNER'}, on_delete=django.db.models.deletion.CASCADE, related_name='owned_projects', to=settings.AUTH_USER_MODEL)),
-                ('team_members', models.ManyToManyField(blank=True, limit_choices_to={'role': 'EMPLOYEE'}, related_name='assigned_projects', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                (
+                    "project_type",
+                    models.CharField(
+                        choices=[
+                            ("ORACLE_SUPPORT", "Oracle Support"),
+                            ("SOFTWARE_SUPPORT", "Software Support"),
+                            ("OPEN_SOURCE_SUPPORT", "Open-Source Support"),
+                        ],
+                        max_length=30,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "client",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="projects",
+                        to="clients.client",
+                    ),
+                ),
+                (
+                    "project_owner",
+                    models.ForeignKey(
+                        limit_choices_to={"role": "PROJECT_OWNER"},
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="owned_projects",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "team_members",
+                    models.ManyToManyField(
+                        blank=True,
+                        limit_choices_to={"role": "EMPLOYEE"},
+                        related_name="assigned_projects",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('client', 'name')},
+                "unique_together": {("client", "name")},
             },
         ),
     ]

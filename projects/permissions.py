@@ -24,8 +24,14 @@ class CanViewProject(BasePermission):
             return False
         if request.user.role == UserRole.ADMIN:
             return True
-        if request.user.role == UserRole.PROJECT_OWNER and obj.project_owner_id == request.user.id:
+        if (
+            request.user.role == UserRole.PROJECT_OWNER
+            and obj.project_owner_id == request.user.id
+        ):
             return True
-        if request.user.role == UserRole.EMPLOYEE and obj.team_members.filter(id=request.user.id).exists():
+        if (
+            request.user.role == UserRole.EMPLOYEE
+            and obj.team_members.filter(id=request.user.id).exists()
+        ):
             return True
         return False

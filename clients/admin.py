@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Client
 
 
@@ -6,4 +7,3 @@ from .models import Client
 class ClientAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "contact_email", "phone", "created_at")
     search_fields = ("name", "contact_email", "phone")
-

@@ -1,9 +1,6 @@
 from django.urls import path
-from .views import (
-    ClientListAPIView,
-    ClientCreateAPIView,
-    ClientDetailAPIView,
-)
+
+from .views import ClientCreateAPIView, ClientDetailAPIView, ClientListAPIView
 
 app_name = "clients"
 

@@ -1,14 +1,15 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from users.permissions import IsAdmin
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from users.permissions import IsAdmin
 
 from .models import Client
 from .serializers import ClientSerializer
 
 
-#List Clients
+# List Clients
 class ClientListAPIView(APIView):
     permission_classes = [IsAdmin]
 
@@ -18,7 +19,7 @@ class ClientListAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-#Create Client
+# Create Client
 class ClientCreateAPIView(APIView):
     permission_classes = [IsAdmin]
 
@@ -30,7 +31,7 @@ class ClientCreateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-#Retrieve / Update / Delete
+# Retrieve / Update / Delete
 class ClientDetailAPIView(APIView):
     permission_classes = [IsAdmin]
 

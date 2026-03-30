@@ -1,8 +1,9 @@
 from django.db import models
+
 from clients.models import Client
-from users.models import User
-from users.choices import UserRole
 from projects.choices import ProjectType
+from users.choices import UserRole
+from users.models import User
 
 
 class Project(models.Model):

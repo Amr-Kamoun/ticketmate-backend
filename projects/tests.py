@@ -5,8 +5,8 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from clients.models import Client
-from users.models import UserRole
 from projects.models import Project, ProjectType
+from users.models import UserRole
 
 User = get_user_model()
 
@@ -77,8 +77,12 @@ class ProjectAPITestCase(APITestCase):
         self.project.team_members.add(self.employee_user)
 
         self.list_create_url = reverse("projects:project-list-create")
-        self.detail_url = reverse("projects:project-detail", kwargs={"pk": self.project.pk})
-        self.assign_members_url = reverse("projects:assign-members", kwargs={"pk": self.project.pk})
+        self.detail_url = reverse(
+            "projects:project-detail", kwargs={"pk": self.project.pk}
+        )
+        self.assign_members_url = reverse(
+            "projects:assign-members", kwargs={"pk": self.project.pk}
+        )
         self.my_projects_url = reverse("projects:my-projects")
 
     def authenticate(self, user):
@@ -212,7 +216,9 @@ class ProjectAPITestCase(APITestCase):
 
     def test_project_owner_can_update_owned_project(self):
         self.authenticate(self.po_user)
-        response = self.client.patch(self.detail_url, {"name": "Updated Project"}, format="json")
+        response = self.client.patch(
+            self.detail_url, {"name": "Updated Project"}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.project.refresh_from_db()
         self.assertEqual(self.project.name, "Updated Project")
@@ -228,7 +234,9 @@ class ProjectAPITestCase(APITestCase):
 
     def test_employee_cannot_update_project(self):
         self.authenticate(self.employee_user)
-        response = self.client.patch(self.detail_url, {"name": "Blocked"}, format="json")
+        response = self.client.patch(
+            self.detail_url, {"name": "Blocked"}, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_can_delete_project(self):
