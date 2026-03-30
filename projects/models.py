@@ -1,13 +1,9 @@
 from django.db import models
 
 from clients.models import Client
-from users.models import User, UserRole
-
-
-class ProjectType(models.TextChoices):
-    ORACLE_SUPPORT = "ORACLE_SUPPORT", "Oracle Support"
-    SOFTWARE_SUPPORT = "SOFTWARE_SUPPORT", "Software Support"
-    OPEN_SOURCE_SUPPORT = "OPEN_SOURCE_SUPPORT", "Open-Source Support"
+from projects.choices import ProjectType
+from users.choices import UserRole
+from users.models import User
 
 
 class Project(models.Model):

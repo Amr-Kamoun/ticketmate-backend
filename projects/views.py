@@ -5,7 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from users.models import User, UserRole
+from users.choices import UserRole
+from users.models import User
 
 from .models import Project
 from .permissions import CanManageProject, CanViewProject

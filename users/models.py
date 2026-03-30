@@ -1,12 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-
-class UserRole(models.TextChoices):
-    ADMIN = "ADMIN", "Admin"
-    PROJECT_OWNER = "PROJECT_OWNER", "Project Owner"
-    EMPLOYEE = "EMPLOYEE", "Employee"
-    CLIENT = "CLIENT", "Client"
+from users.choices import UserRole
 
 
 class User(AbstractUser):
