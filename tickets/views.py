@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from tickets.helpers import can_create_ticket
+from tickets.helpers import can_create_ticket, get_accessible_tickets
 from tickets.models import Ticket, TicketStatus
 from tickets.permissions import CanAccessTicket
 from tickets.serializers import TicketSerializer
@@ -20,10 +20,8 @@ class TicketListAPIView(APIView):
 
     def get(self, request):
         tickets = (
-            Ticket.objects.select_related(
-                "project", "created_by", "assigned_to", "linked_ticket"
-            )
-            .all()
+            get_accessible_tickets(request.user)
+            .select_related("project", "created_by", "assigned_to", "linked_ticket")
             .order_by("-created_at")
         )
 
@@ -127,6 +125,7 @@ class TicketAssignAPIView(APIView):
 
     def patch(self, request, pk):
         ticket = self.get_object(pk)
+        self.check_object_permissions(request, ticket)
 
         assigned_to_id = request.data.get("assigned_to")
         if not assigned_to_id:
@@ -155,14 +154,14 @@ class TicketAssignAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if hasattr(ticket.project, "team_members"):
-            if not ticket.project.team_members.filter(id=assigned_user.id).exists():
-                return Response(
-                    {"assigned_to": ["User is not part of this project team."]},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-        self.check_object_permissions(request, ticket)
+        if (
+            hasattr(ticket.project, "team_members")
+            and not ticket.project.team_members.filter(id=assigned_user.id).exists()
+        ):
+            return Response(
+                {"assigned_to": ["User is not part of this project team."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         ticket.assigned_to = assigned_user
 
@@ -197,6 +196,7 @@ class TicketStatusUpdateAPIView(APIView):
 
     def patch(self, request, pk):
         ticket = self.get_object(pk)
+        self.check_object_permissions(request, ticket)
 
         new_status = request.data.get("status")
         if not new_status:
@@ -217,8 +217,6 @@ class TicketStatusUpdateAPIView(APIView):
                 {"detail": "Invalid status transition."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        self.check_object_permissions(request, ticket)
 
         ticket.status = new_status
 
@@ -243,6 +241,7 @@ class TicketLinkAPIView(APIView):
 
     def patch(self, request, pk):
         ticket = self.get_object(pk)
+        self.check_object_permissions(request, ticket)
 
         linked_ticket_id = request.data.get("linked_ticket")
         if not linked_ticket_id:
@@ -265,7 +264,7 @@ class TicketLinkAPIView(APIView):
 
         linked_ticket = get_object_or_404(Ticket, pk=linked_ticket_id)
 
-        self.check_object_permissions(request, ticket)
+        self.check_object_permissions(request, linked_ticket)
 
         ticket.linked_ticket = linked_ticket
         ticket.save()

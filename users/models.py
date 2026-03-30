@@ -17,6 +17,13 @@ class User(AbstractUser):
         choices=UserRole.choices,
         default=UserRole.CLIENT,
     )
+    client = models.ForeignKey(
+        "clients.Client",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="users",
+    )
 
     def __str__(self):
         return self.username
