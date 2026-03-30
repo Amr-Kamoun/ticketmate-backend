@@ -1,3 +1,4 @@
+from tickets.models import Ticket
 from users.models import UserRole
 
 
@@ -40,9 +41,6 @@ def user_can_access_ticket(user, ticket):
 
 
 def get_accessible_tickets(user):
-    from tickets.models import Ticket
-    from users.models import UserRole
-
     if not user.is_authenticated:
         return Ticket.objects.none()
 
@@ -54,5 +52,8 @@ def get_accessible_tickets(user):
 
     if user.role == UserRole.EMPLOYEE:
         return Ticket.objects.filter(project__team_members=user).distinct()
+
+    if user.role == UserRole.CLIENT and user.client_id:
+        return Ticket.objects.filter(project__client=user.client)
 
     return Ticket.objects.none()
