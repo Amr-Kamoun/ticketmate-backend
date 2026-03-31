@@ -1,21 +1,14 @@
-import os
-
 from rest_framework import serializers
 
 from attachments.models import Attachment
-
-ALLOWED_EXTENSIONS = {
-    ".pdf",
-    ".png",
-    ".jpg",
-    ".jpeg",
-    ".doc",
-    ".docx",
-    ".txt",
-}
+from attachments.validators import validate_file_extension, validate_file_size
 
 
 class AttachmentSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(
+        validators=[validate_file_extension, validate_file_size]
+    )
+
     class Meta:
         model = Attachment
         fields = [
@@ -26,9 +19,3 @@ class AttachmentSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ("id", "uploaded_by", "created_at")
-
-    def validate_file(self, value):
-        ext = os.path.splitext(value.name)[1].lower()
-        if ext not in ALLOWED_EXTENSIONS:
-            raise serializers.ValidationError("Unsupported file type.")
-        return value
