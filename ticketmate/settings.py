@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "clients",
     "projects",
     "tickets",
+    "ticket_messages",
     "notifications",
     "dashboard",
 ]
