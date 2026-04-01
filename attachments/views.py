@@ -16,7 +16,10 @@ class AttachmentUploadAPIView(APIView):
         ticket = get_object_or_404(Ticket, pk=ticket_id)
         self.check_object_permissions(request, ticket)
 
-        serializer = AttachmentSerializer(data=request.data)
+        serializer = AttachmentSerializer(
+            data=request.data,
+            context={"ticket": ticket},
+        )
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

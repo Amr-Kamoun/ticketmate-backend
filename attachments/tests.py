@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from attachments.models import Attachment
 from clients.models import Client
 from projects.models import Project
+from ticket_messages.models import TicketMessage
 from tickets.choices import TicketPriority, TicketStatus, TicketType
 from tickets.models import Ticket
 from users.models import UserRole
@@ -60,6 +61,28 @@ class AttachmentUploadAPITestCase(APITestCase):
             created_by=self.admin_user,
         )
 
+        self.other_ticket = Ticket.objects.create(
+            title="Another Ticket",
+            description="Another issue.",
+            ticket_type=TicketType.PROBLEM,
+            priority=TicketPriority.MEDIUM,
+            status=TicketStatus.TODO,
+            project=self.project,
+            created_by=self.admin_user,
+        )
+
+        self.message = TicketMessage.objects.create(
+            ticket=self.ticket,
+            author=self.admin_user,
+            body="Initial message",
+        )
+
+        self.other_message = TicketMessage.objects.create(
+            ticket=self.other_ticket,
+            author=self.admin_user,
+            body="Other ticket message",
+        )
+
         self.upload_url = reverse(
             "attachments:attachment-upload",
             kwargs={"ticket_id": self.ticket.pk},
@@ -89,6 +112,30 @@ class AttachmentUploadAPITestCase(APITestCase):
 
         attachment = Attachment.objects.first()
         self.assertEqual(attachment.ticket, self.ticket)
+        self.assertEqual(attachment.uploaded_by, self.admin_user)
+        self.assertIsNone(attachment.message)
+
+    def test_authenticated_user_can_upload_attachment_to_message(self):
+        self.authenticate(self.admin_user)
+
+        file = SimpleUploadedFile(
+            "test.txt",
+            b"hello world",
+            content_type="text/plain",
+        )
+
+        response = self.client.post(
+            self.upload_url,
+            {"message": self.message.pk, "file": file},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Attachment.objects.count(), 1)
+
+        attachment = Attachment.objects.first()
+        self.assertEqual(attachment.ticket, self.ticket)
+        self.assertEqual(attachment.message, self.message)
         self.assertEqual(attachment.uploaded_by, self.admin_user)
 
     def test_unauthenticated_user_cannot_upload_attachment(self):
@@ -148,4 +195,22 @@ class AttachmentUploadAPITestCase(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Attachment.objects.count(), 0)
+
+    def test_cannot_upload_attachment_with_message_from_another_ticket(self):
+        self.authenticate(self.admin_user)
+
+        file = SimpleUploadedFile(
+            "test.txt",
+            b"hello world",
+            content_type="text/plain",
+        )
+
+        response = self.client.post(
+            self.upload_url,
+            {"message": self.other_message.pk, "file": file},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Attachment.objects.count(), 0)
