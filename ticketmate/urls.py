@@ -34,6 +34,13 @@ urlpatterns = [
     path("api/projects/", include(("projects.urls", "projects"), namespace="projects")),
     path("api/tickets/", include(("tickets.urls", "tickets"), namespace="tickets")),
     path("api/", include(("attachments.urls", "attachments"), namespace="attachments")),
+    path(
+        "api/messages/",
+        include(
+            ("ticket_messages.urls", "ticket_messages"),
+            namespace="ticket_messages",
+        ),
+    ),
 ]
 
 if settings.DEBUG:
