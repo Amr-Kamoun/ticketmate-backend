@@ -10,6 +10,13 @@ class Attachment(models.Model):
         on_delete=models.CASCADE,
         related_name="attachments",
     )
+    message = models.ForeignKey(
+        "ticket_messages.TicketMessage",
+        on_delete=models.CASCADE,
+        related_name="attachments",
+        null=True,
+        blank=True,
+    )
     file = models.FileField(upload_to="attachments/")
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
