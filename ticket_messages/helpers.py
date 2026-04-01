@@ -1,7 +1,6 @@
 from tickets.helpers import user_can_access_ticket
 from users.choices import UserRole
 
-
 STAFF_MESSAGE_ROLES = {
     UserRole.ADMIN,
     UserRole.PROJECT_OWNER,

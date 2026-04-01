@@ -224,6 +224,7 @@ class TicketMessageAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["ticket"], self.ticket.id)
         self.assertEqual(response.data["author"], self.employee_user.id)
+
     def test_project_owner_can_list_all_messages(self):
         self.authenticate(self.po_user)
 
