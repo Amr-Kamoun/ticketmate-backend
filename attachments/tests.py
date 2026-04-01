@@ -60,7 +60,10 @@ class AttachmentUploadAPITestCase(APITestCase):
             created_by=self.admin_user,
         )
 
-        self.upload_url = reverse("attachments:attachment-upload")
+        self.upload_url = reverse(
+            "attachments:attachment-upload",
+            kwargs={"ticket_id": self.ticket.pk},
+        )
 
     def authenticate(self, user):
         refresh = RefreshToken.for_user(user)
@@ -77,12 +80,16 @@ class AttachmentUploadAPITestCase(APITestCase):
 
         response = self.client.post(
             self.upload_url,
-            {"ticket": self.ticket.pk, "file": file},
+            {"file": file},
             format="multipart",
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Attachment.objects.count(), 1)
+
+        attachment = Attachment.objects.first()
+        self.assertEqual(attachment.ticket, self.ticket)
+        self.assertEqual(attachment.uploaded_by, self.admin_user)
 
     def test_unauthenticated_user_cannot_upload_attachment(self):
         file = SimpleUploadedFile(
@@ -93,7 +100,7 @@ class AttachmentUploadAPITestCase(APITestCase):
 
         response = self.client.post(
             self.upload_url,
-            {"ticket": self.ticket.pk, "file": file},
+            {"file": file},
             format="multipart",
         )
 
@@ -110,9 +117,35 @@ class AttachmentUploadAPITestCase(APITestCase):
 
         response = self.client.post(
             self.upload_url,
-            {"ticket": self.ticket.pk, "file": file},
+            {"file": file},
             format="multipart",
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("file", response.data)
+
+    def test_authenticated_user_without_ticket_access_cannot_upload_attachment(self):
+        unauthorized_user = User.objects.create_user(
+            username="outsider",
+            email="outsider@example.com",
+            password="OutsiderPass123!",
+            full_name="Outsider User",
+            role=UserRole.EMPLOYEE,
+        )
+
+        self.authenticate(unauthorized_user)
+
+        file = SimpleUploadedFile(
+            "test.txt",
+            b"hello world",
+            content_type="text/plain",
+        )
+
+        response = self.client.post(
+            self.upload_url,
+            {"file": file},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Attachment.objects.count(), 0)

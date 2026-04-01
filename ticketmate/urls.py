@@ -33,10 +33,7 @@ urlpatterns = [
     path("api/clients/", include(("clients.urls", "clients"), namespace="clients")),
     path("api/projects/", include(("projects.urls", "projects"), namespace="projects")),
     path("api/tickets/", include(("tickets.urls", "tickets"), namespace="tickets")),
-    path(
-        "api/attachments/",
-        include(("attachments.urls", "attachments"), namespace="attachments"),
-    ),
+    path("api/", include(("attachments.urls", "attachments"), namespace="attachments")),
 ]
 
 if settings.DEBUG:

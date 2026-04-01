@@ -5,5 +5,9 @@ from attachments.views import AttachmentUploadAPIView
 app_name = "attachments"
 
 urlpatterns = [
-    path("upload/", AttachmentUploadAPIView.as_view(), name="attachment-upload"),
+    path(
+        "tickets/<int:ticket_id>/attachments/",
+        AttachmentUploadAPIView.as_view(),
+        name="attachment-upload",
+    ),
 ]
