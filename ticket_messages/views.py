@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from notifications.helpers import create_new_message_notifications
 from ticket_messages.models import TicketMessage
 from ticket_messages.serializers import TicketMessageSerializer
 from tickets.helpers import user_can_access_ticket
@@ -47,7 +48,13 @@ class TicketMessageListCreateAPIView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save(author=request.user, ticket=ticket)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            message_obj = serializer.save(author=request.user, ticket=ticket)
+            create_new_message_notifications(message_obj)
+
+            response_serializer = TicketMessageSerializer(
+                message_obj,
+                context={"request": request},
+            )
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

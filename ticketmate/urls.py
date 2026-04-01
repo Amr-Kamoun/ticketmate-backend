@@ -41,6 +41,13 @@ urlpatterns = [
             namespace="ticket_messages",
         ),
     ),
+    path(
+        "api/notifications/",
+        include(
+            ("notifications.urls", "notifications"),
+            namespace="notifications",
+        ),
+    ),
 ]
 
 if settings.DEBUG:
