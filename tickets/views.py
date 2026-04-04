@@ -6,11 +6,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from notifications.helpers import (
+    create_ticket_assigned_notification,
+    create_ticket_created_notifications,
+    create_ticket_status_notification,
+)
 from tickets.helpers import can_create_ticket, get_accessible_tickets
 from tickets.models import Ticket, TicketStatus
 from tickets.permissions import CanAccessTicket
 from tickets.serializers import TicketSerializer
-from users.models import UserRole
+from users.choices import UserRole
 
 User = get_user_model()
 
@@ -66,7 +71,9 @@ class TicketCreateAPIView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer.save(created_by=request.user)
+        ticket = serializer.save(created_by=request.user)
+        create_ticket_created_notifications(ticket)
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -169,6 +176,7 @@ class TicketAssignAPIView(APIView):
             ticket.status = TicketStatus.IN_PROGRESS
 
         ticket.save()
+        create_ticket_assigned_notification(ticket)
 
         return Response(
             {
@@ -226,6 +234,7 @@ class TicketStatusUpdateAPIView(APIView):
             ticket.closed_at = timezone.now()
 
         ticket.save()
+        create_ticket_status_notification(ticket)
 
         return Response(
             {"status": ticket.status},
