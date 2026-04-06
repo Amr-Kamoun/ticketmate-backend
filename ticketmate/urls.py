@@ -48,6 +48,10 @@ urlpatterns = [
             namespace="notifications",
         ),
     ),
+    path(
+        "api/dashboard/",
+        include(("dashboard.urls", "dashboard"), namespace="dashboard"),
+    ),
 ]
 
 if settings.DEBUG:
