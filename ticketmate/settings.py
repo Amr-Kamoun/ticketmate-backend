@@ -131,6 +131,7 @@ STATIC_URL = "static/"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -149,3 +150,8 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "TicketMate backend APIs",
     "VERSION": "1.0.0",
 }
+
+
+# Email settings for local development
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "TicketMate <no-reply@ticketmate.local>"
