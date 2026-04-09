@@ -10,23 +10,23 @@ It enables structured ticket handling, communication, and performance tracking a
 
 TicketMate supports:
 
-- Multiple projects  
-- Multiple clients  
-- Multiple support teams  
-- Ticket assignment workflows  
-- Ticket lifecycle management  
-- Ticket discussions  
-- File attachments  
-- Email notifications  
-- Performance analytics  
+- Multiple projects
+- Multiple clients
+- Multiple support teams
+- Ticket assignment workflows
+- Ticket lifecycle management
+- Ticket discussions
+- File attachments
+- Email notifications
+- Performance analytics
 
 ---
 
 ## 🛠 Tech Stack
 
-- **Backend:** Django  
-- **API:** Django REST Framework (DRF)  
-- **Database:** PostgreSQL  
+- **Backend:** Django
+- **API:** Django REST Framework (DRF)
+- **Database:** PostgreSQL
 
 > ⚠️ Backend-only system (no frontend included)
 
@@ -35,49 +35,49 @@ TicketMate supports:
 ## 👥 User Roles
 
 ### 🔑 Admin
-- Manage users and roles  
-- Create and manage projects  
-- Assign teams  
-- Monitor system performance  
-- Access dashboards  
+- Manage users and roles
+- Create and manage projects
+- Assign teams
+- Monitor system performance
+- Access dashboards
 
 ---
 
 ### 📌 Project Owner (PO)
-- Receive ticket notifications  
-- Assign tickets to employees  
-- Communicate with clients  
-- Review and close tickets  
+- Receive ticket notifications
+- Assign tickets to employees
+- Communicate with clients
+- Review and close tickets
 
 ---
 
 ### 🛠 Support Employee
-- Investigate issues  
-- Communicate with clients  
-- Resolve tickets  
-- Update ticket status  
+- Investigate issues
+- Communicate with clients
+- Resolve tickets
+- Update ticket status
 
 > Employees can belong to multiple projects.
 
 ---
 
 ### 👤 Client User
-- Create support tickets  
-- Reply to discussions  
-- Upload attachments  
-- Track ticket progress  
+- Create support tickets
+- Reply to discussions
+- Upload attachments
+- Track ticket progress
 
 ---
 
 ## 🧱 Core Entities
 
-- Users  
-- Clients  
-- Projects  
-- Tickets  
-- Messages  
-- Attachments  
-- Notifications  
+- Users
+- Clients
+- Projects
+- Tickets
+- Messages
+- Attachments
+- Notifications
 
 ---
 
@@ -86,61 +86,61 @@ TicketMate supports:
 Projects represent service agreements between the company and clients.
 
 ### Fields
-- Name  
-- Client  
-- Project Type  
-- Project Owner  
-- Team Members  
+- Name
+- Client
+- Project Type
+- Project Owner
+- Team Members
 
 ### Project Types
-- Oracle Support  
-- Software Support  
-- Open-Source Support  
+- Oracle Support
+- Software Support
+- Open-Source Support
 
 ---
 
 ## 🎫 Ticket System
 
 ### Ticket Fields
-- Title  
-- Description  
-- Type  
-- Priority  
-- Project  
+- Title
+- Description
+- Type
+- Priority
+- Project
 
 ---
 
 ### Ticket Types
-- Problem  
-- Inquiry  
-- New Request  
+- Problem
+- Inquiry
+- New Request
 
 ---
 
 ### Priority Levels
-- Low  
-- Medium  
-- High  
-- Critical  
+- Low
+- Medium
+- High
+- Critical
 
 ---
 
 ## 🔄 Ticket Lifecycle
 
 ### Status Flow
-- Todo  
-- In Progress  
-- Resolved  
-- Closed  
+- Todo
+- In Progress
+- Resolved
+- Closed
 
 ### Workflow
-1. Client creates ticket  
-2. Project Owner is notified  
-3. PO assigns ticket  
-4. Employee investigates and communicates  
-5. Ticket marked as Resolved  
-6. PO reviews solution  
-7. Ticket is Closed  
+1. Client creates ticket
+2. Project Owner is notified
+3. PO assigns ticket
+4. Employee investigates and communicates
+5. Ticket marked as Resolved
+6. PO reviews solution
+7. Ticket is Closed
 
 > ❗ Closed tickets cannot be edited.
 
@@ -150,10 +150,10 @@ Projects represent service agreements between the company and clients.
 
 Each ticket includes a conversation thread:
 
-- Client ↔ Employee communication  
-- Internal notes (employees only)  
-- Progress updates  
-- Clarifications  
+- Client ↔ Employee communication
+- Internal notes (employees only)
+- Progress updates
+- Clarifications
 
 ---
 
@@ -161,21 +161,21 @@ Each ticket includes a conversation thread:
 
 Supports file uploads:
 
-- During ticket creation  
-- During discussions  
+- During ticket creation
+- During discussions
 
 ### Examples
-- Screenshots  
-- Logs  
-- Documents  
+- Screenshots
+- Logs
+- Documents
 
 ---
 
 ## 🔗 Linked Tickets
 
-- Closed tickets cannot be reopened  
-- New tickets can be linked to old ones  
-- Helps track recurring issues  
+- Closed tickets cannot be reopened
+- New tickets can be linked to old ones
+- Helps track recurring issues
 
 ---
 
@@ -183,42 +183,42 @@ Supports file uploads:
 
 Triggered when:
 
-- Ticket is created  
-- Ticket is assigned  
-- Message is added  
-- Ticket is resolved  
-- Ticket is closed  
+- Ticket is created
+- Ticket is assigned
+- Message is added
+- Ticket is resolved
+- Ticket is closed
 
 ### Delivery
-- Email  
-- System notifications  
+- Email
+- System notifications
 
 ---
 
 ## 📊 Dashboard & Reporting
 
 ### Metrics
-- Total tickets  
-- Open tickets  
-- Resolved tickets  
-- Closed tickets  
-- Tickets by priority  
-- Tickets by project  
+- Total tickets
+- Open tickets
+- Resolved tickets
+- Closed tickets
+- Tickets by priority
+- Tickets by project
 
 ---
 
 ### Reports
-- Tickets per project  
-- Tickets per employee  
-- Distribution by priority  
-- Distribution by type  
+- Tickets per project
+- Tickets per employee
+- Distribution by priority
+- Distribution by type
 
 ---
 
 ### Performance
-- Average resolution time  
-- Employee productivity  
-- Ticket activity tracking  
+- Average resolution time
+- Employee productivity
+- Ticket activity tracking
 
 ---
 
@@ -231,71 +231,71 @@ Resolution Time = Resolved Time - Creation Time
 ## 🔐 System Requirements
 
 ### Backend
-- RESTful API architecture  
-- Secure authentication  
-- Role-based authorization  
-- Scalable storage  
-- High availability  
-- Notification services  
+- RESTful API architecture
+- Secure authentication
+- Role-based authorization
+- Scalable storage
+- High availability
+- Notification services
 
 ---
 
 ### Security
-- Authentication & authorization  
-- Role-based access control  
-- Data access restrictions  
-- Attachment validation  
-- Audit logging  
+- Authentication & authorization
+- Role-based access control
+- Data access restrictions
+- Attachment validation
+- Audit logging
 
 ---
 
 ## 📌 Key Features
 
-- Multi-project support  
-- Multi-client support  
-- Role-based access control  
-- Ticket lifecycle management  
-- Ticket assignment workflow  
-- Messaging system  
-- Attachment handling  
-- Notifications  
-- Analytics dashboard  
-- Resolution tracking  
-- Linked ticket history  
+- Multi-project support
+- Multi-client support
+- Role-based access control
+- Ticket lifecycle management
+- Ticket assignment workflow
+- Messaging system
+- Attachment handling
+- Notifications
+- Analytics dashboard
+- Resolution tracking
+- Linked ticket history
 
 ---
 
 ## 🚀 Future Enhancements
 
-- SLA management  
-- Automated ticket assignment  
-- Knowledge base integration  
-- Mobile notifications  
-- AI-assisted ticket classification  
-- Ticket escalation system  
+- SLA management
+- Automated ticket assignment
+- Knowledge base integration
+- Mobile notifications
+- AI-assisted ticket classification
+- Ticket escalation system
 
 ---
 
 ## 🧪 User Stories (High Level)
 
 ### Admin
-- Create and manage projects  
-- Assign employees  
-- Monitor system performance  
+- Create and manage projects
+- Assign employees
+- Monitor system performance
 
 ### Project Owner
-- Assign tickets  
-- Communicate with clients  
-- Review and close tickets  
+- Assign tickets
+- Communicate with clients
+- Review and close tickets
 
 ### Employee
-- Handle assigned tickets  
-- Communicate and resolve issues  
+- Handle assigned tickets
+- Communicate and resolve issues
 
 ### Client
-- Create tickets  
-- Upload attachments  
-- Track progress  
+- Create tickets
+- Upload attachments
+- Track progress
 
 ---
 

@@ -24,9 +24,7 @@ def get_dashboard_stats():
     )
 
     tickets_by_status = list(
-        Ticket.objects.values("status")
-        .annotate(count=Count("id"))
-        .order_by("status")
+        Ticket.objects.values("status").annotate(count=Count("id")).order_by("status")
     )
 
     tickets_per_employee = list(

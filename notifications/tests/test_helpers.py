@@ -129,9 +129,7 @@ class NotificationHelperTests(TestCase):
 
         self.assertEqual(len(notifications), 2)
 
-        recipients = set(
-            Notification.objects.values_list("recipient_id", flat=True)
-        )
+        recipients = set(Notification.objects.values_list("recipient_id", flat=True))
         self.assertIn(self.po_user.id, recipients)
         self.assertIn(self.client_user.id, recipients)
 

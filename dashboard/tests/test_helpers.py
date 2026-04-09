@@ -101,7 +101,9 @@ class DashboardHelperTests(TestCase):
     def test_get_dashboard_stats_returns_tickets_by_priority(self):
         stats = get_dashboard_stats()
 
-        priorities = {item["priority"]: item["count"] for item in stats["tickets_by_priority"]}
+        priorities = {
+            item["priority"]: item["count"] for item in stats["tickets_by_priority"]
+        }
         self.assertEqual(priorities["HIGH"], 1)
         self.assertEqual(priorities["CRITICAL"], 1)
         self.assertEqual(priorities["MEDIUM"], 1)
@@ -109,7 +111,9 @@ class DashboardHelperTests(TestCase):
     def test_get_dashboard_stats_returns_tickets_by_status(self):
         stats = get_dashboard_stats()
 
-        statuses = {item["status"]: item["count"] for item in stats["tickets_by_status"]}
+        statuses = {
+            item["status"]: item["count"] for item in stats["tickets_by_status"]
+        }
         self.assertEqual(statuses["TODO"], 1)
         self.assertEqual(statuses["RESOLVED"], 1)
         self.assertEqual(statuses["CLOSED"], 1)
@@ -118,7 +122,9 @@ class DashboardHelperTests(TestCase):
         stats = get_dashboard_stats()
 
         self.assertEqual(len(stats["tickets_per_employee"]), 1)
-        self.assertEqual(stats["tickets_per_employee"][0]["assigned_to__id"], self.employee_user.id)
+        self.assertEqual(
+            stats["tickets_per_employee"][0]["assigned_to__id"], self.employee_user.id
+        )
         self.assertEqual(stats["tickets_per_employee"][0]["count"], 3)
 
     def test_get_dashboard_stats_returns_average_resolution_time_seconds(self):
