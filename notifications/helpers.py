@@ -1,4 +1,5 @@
 from notifications.choices import NotificationType
+from notifications.email_service import send_notification_email
 from notifications.models import Notification
 from tickets.choices import TicketStatus
 from users.choices import UserRole
@@ -8,12 +9,23 @@ def create_notification(*, recipient, ticket, notification_type, message):
     if not recipient:
         return None
 
-    return Notification.objects.create(
+    notification = Notification.objects.create(
         recipient=recipient,
         ticket=ticket,
         notification_type=notification_type,
         message=message,
     )
+
+    try:
+        send_notification_email(
+            recipient=recipient,
+            subject=f"TicketMate Notification: {notification.get_notification_type_display()}",
+            message=message,
+        )
+    except Exception:
+        pass
+
+    return notification
 
 
 def create_ticket_created_notifications(ticket):
